@@ -26,9 +26,9 @@ const int lightPin = 32;
 const int metalPin = 35;
 int avgweight = 0, avglight = 0, avgmetal = 0;
 int weight, metal, light;
-int backGoundLight = -1;
+int backGoundLight = -1, caliWeight = -1;
 int cnt = 0;
-const int countDown = 2000;
+const int countDown = 1000;
 int start_time_point;
 int d = 0;
 static const int lowPin = 18;             /*Connect the servo motor to GPIO18*/
@@ -235,30 +235,33 @@ void resetServo(){
 }
 
 void dump(Direction d){
-  Serial.print("Dump to:");
   switch(d){
     case Direction::A:
       turnServo(BOT, 0);
       delay(200);
       turnServo(TOP, 150);
+      Serial.print("Dump to:");
       Serial.println("A");
       break;
     case Direction::B:
       turnServo(BOT, 90);
       delay(200);
       turnServo(TOP, 30);
+      Serial.print("Dump to:");
       Serial.println("B");
       break;
     case Direction::C:
       turnServo(BOT, 0);
       delay(200);
       turnServo(TOP, 30);
+      Serial.print("Dump to:");
       Serial.println("C");
       break;
     case Direction::D:
       turnServo(BOT, 90);
       delay(200);
       turnServo(TOP, 150);
+      Serial.print("Dump to:");
       Serial.println("D");
       break;
   }
@@ -282,12 +285,15 @@ void loop(){
     Serial.print("IP address: ");
     Serial.print(WiFi.localIP()); 
     light = avglight / cnt;
-    if(backGoundLight == -1){
-      backGoundLight = light;
-    }
-    light = light - backGoundLight + 4095; 
     metal = avgmetal / cnt;
     weight = avgweight / cnt;
+    if(backGoundLight == -1){
+      backGoundLight = light;
+    } 
+    if(caliWeight == -1){
+      caliWeight = weight;
+    }
+    light = light - backGoundLight + 4095; 
     Serial.print(", Light: ");
     Serial.print(light);
     Serial.print(", Weight: ");
@@ -314,11 +320,11 @@ void loop(){
         Serial.println("Type: metal");
         dump(Direction::A);
       }
-      else if(weight > 10){
-        type = TrashType::glass;
-        Serial.println("Type: glass");
-        dump(Direction::B);
-      }
+      //else if(weight > 10){ // weight sensor is broken
+      //  type = TrashType::glass;
+      //  Serial.println("Type: glass");
+      //  dump(Direction::B);
+      //}
       else if(light > 3000){
         type = TrashType::plastic;
         Serial.println("Type: plastic");
